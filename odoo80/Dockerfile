@@ -55,4 +55,5 @@ RUN wget -qO- https://deb.nodesource.com/setup | sudo bash - \
     && apt-get install nodejs \
     && npm install -g less \
     && npm install -g less-plugin-clean-css
+RUN ln -s /usr/share/i18n/SUPPORTED /var/lib/locales/supported.d/all && locale-gen
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/*
