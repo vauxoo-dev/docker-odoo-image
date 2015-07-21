@@ -105,6 +105,13 @@ RUN apt-get install -y expect-dev
 # Install spf13 for vim
 RUN curl http://j.mp/spf13-vim3 -L -o - | sh
 
+# Install travis package
+RUN apt-get install ruby-full \
+  && gem install travis -v 1.8.0 --no-rdoc --no-ri \
+  && gem install travis --user-install \
+  && ln -sf /root/.gem/ruby/*/bin/travis /usr/local/bin/travis \
+  && gem install travis --pre
+
 # Expose basic ports
   # Postgres database
 EXPOSE 5432
