@@ -1,4 +1,5 @@
-FROM vauxoo/odoo-80-image
+# FROM vauxoo/odoo-80-image
+FROM vauxoo/odoo-80-image-shippable-auto
 MAINTAINER Tulio Ruiz <tulio@vauxoo.com>
 
 ENV RUN_COMMAND_MQT_10_ENTRYPOINT_IMAGE="/entrypoint_image" \

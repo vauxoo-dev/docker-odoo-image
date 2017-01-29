@@ -51,6 +51,7 @@ createuser_custom(){
     useradd -d "/home/${USER}" -m -s "/bin/bash" "${USER}"
     su - ${USER} -c "git config --global user.name ${USER}"
     su - ${USER} -c "git config --global user.email ${USER}@email.com"
+    usermod -a -G postgres odoo
 }
 
 psql_create_role(){
