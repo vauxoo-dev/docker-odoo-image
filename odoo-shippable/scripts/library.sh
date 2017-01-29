@@ -46,7 +46,6 @@ targz_download_execute(){
     rm -rf "${TEMPDIR}"
 }
 
-
 createuser_custom(){
     USER="${1}"
     useradd -d "/home/${USER}" -m -s "/bin/bash" "${USER}"
