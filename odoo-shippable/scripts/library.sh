@@ -50,7 +50,6 @@ targz_download_execute(){
 createuser_custom(){
     USER="${1}"
     useradd -d "/home/${USER}" -m -s "/bin/bash" "${USER}"
-    echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/100-vauxoo-sudoers
     su - ${USER} -c "git config --global user.name ${USER}"
     su - ${USER} -c "git config --global user.email ${USER}@email.com"
 }
