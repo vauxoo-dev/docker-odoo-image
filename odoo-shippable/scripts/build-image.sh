@@ -8,7 +8,6 @@ set -e
 . /usr/share/vx-docker-internal/odoo80/library.sh
 . /usr/share/vx-docker-internal/odoo-shippable/library.sh
 
-createuser_custom "shippable"
 createuser_custom "odoo"
 exit 0
 
