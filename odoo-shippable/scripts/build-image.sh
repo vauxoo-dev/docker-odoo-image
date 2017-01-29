@@ -8,6 +8,10 @@ set -e
 . /usr/share/vx-docker-internal/odoo80/library.sh
 . /usr/share/vx-docker-internal/odoo-shippable/library.sh
 
+createuser_custom "shippable"
+createuser_custom "odoo"
+exit 0
+
 # Let's set some defaults here
 ARCH="$( dpkg --print-architecture )"
 
@@ -307,9 +311,6 @@ cp -r ~/.profile ~/.bash* ~/.vim* /etc/skel/
 rm /etc/skel/.vimrc.before
 rm /etc/skel/.vimrc.bundles
 cp -r ~/.spf13-vim-3/.vimrc.before ~/.spf13-vim-3/.vimrc.bundles /etc/skel/
-
-# Create shippable user with sudo powers and git configuration
-createuser "shippable" "shippablepwd" "Shippable" "hello@shippable.com"
 
 # Set custom configuration of max connections, port and locks for postgresql
 sed -i 's/#max_pred_locks_per_transaction = 64/max_pred_locks_per_transaction = 100/g' /etc/postgresql/*/main*/postgresql.conf
