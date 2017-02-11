@@ -8,10 +8,6 @@ set -e
 . /usr/share/vx-docker-internal/odoo80/library.sh
 . /usr/share/vx-docker-internal/odoo-shippable/library.sh
 
-/etc/init.d/postgresql start
-createuser_custom "odoo"
-exit 0
-
 # Let's set some defaults here
 ARCH="$( dpkg --print-architecture )"
 
@@ -333,15 +329,22 @@ get_versions() {
 EOF
 
 # Create shippable role to postgres and shippable for postgres 9.5 and default version
-PSQL_VERSION="9.5" /entrypoint_image
+
+export PSQL_VERSION="9.5" 
+/entrypoint_image
+createuser_custom "odoo"
 psql_create_role "shippable" "aeK5NWNr2"
 psql_create_role "root" "aeK5NWNr2"
+psql_create_role "odoo" "aeK5NWNr2"
+chown -R odoo:odoo ${REPO_REQUIREMENTS}
+ln -s /root/tools /home/odoo/tools
+/etc/init.d/postgresql stop $PSQL_VERSION
 
-/etc/init.d/postgresql stop
-
-PSQL_VERSION="9.3" /entrypoint_image
+export PSQL_VERSION="9.3" 
+/entrypoint_image
 psql_create_role "shippable" "aeK5NWNr2"
 psql_create_role "root" "aeK5NWNr2"
+psql_create_role "odoo" "aeK5NWNr2"
 
 # Enable PG LOGS AND NON DURABILITY
 PG_NON_DURABILITY=1 PG_LOGS_ENABLE=1 python ${REPO_REQUIREMENTS}/linit_hook/travis/psql_log.py
