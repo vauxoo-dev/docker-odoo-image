@@ -332,6 +332,7 @@ EOF
 
 export PSQL_VERSION="9.5" 
 /entrypoint_image
+
 createuser_custom "odoo"
 psql_create_role "shippable" "aeK5NWNr2"
 psql_create_role "root" "aeK5NWNr2"
