@@ -5,7 +5,7 @@ set -e
 
 # With a little help from my friends
 . /usr/share/vx-docker-internal/ubuntu-base/library.sh
-. /usr/share/vx-docker-internal/odoo80/library.sh
+. /usr/share/vx-docker-internal/odoo150/library.sh
 . /usr/share/vx-docker-internal/odoo-shippable/library.sh
 
 # Let's set some defaults here
@@ -47,12 +47,11 @@ DPKG_DEPENDS="postgresql-9.3 postgresql-contrib-9.3 \
               postgresql-9.6 postgresql-contrib-9.6 \
               postgresql-10 postgresql-contrib-10 \
               postgresql-11 postgresql-contrib-11 \
-              pgbadger pgtune perl-modules make openssl p7zip-full expect-dev mosh bpython \
-              bsdtar rsync graphviz openssh-server cmake zsh tree tig libffi-dev \
+              pgbadger perl-modules make openssl p7zip-full expect-dev mosh bpython \
+              libarchive-tools rsync graphviz openssh-server cmake zsh tree tig libffi-dev \
               lua50 liblua50-dev liblualib50-dev exuberant-ctags rake \
-              python3.2 python3.2-dev python3.3 python3.3-dev python3.4 python3.4-dev \
-              python3.5 python3.5-dev python3.6 python3.6-dev \
-              software-properties-common Xvfb libmagickwand-dev openjdk-7-jre \
+              python3 python2 \
+              software-properties-common xvfb libmagickwand-dev \
               dos2unix subversion \
               aspell aspell-en aspell-es gettext tk-dev libssl-dev lftp \
               libmysqlclient-dev libcups2-dev emacs byobu chromium-browser"
@@ -88,68 +87,68 @@ apt-get update
 apt-get upgrade
 apt-get install ${DPKG_DEPENDS} ${PIP_DPKG_BUILD_DEPENDS}
 
-# Get ssl libraries for py37
-mkdir -p /usr/lib/x86_64-linux-gnu /usr/local/lib/python3.7/lib-dynload
-cp /tmp/ssh_pylib/libcrypto.so.1.1 /usr/lib/x86_64-linux-gnu/
-cp /tmp/ssh_pylib/libssl.so.1.1 /usr/lib/x86_64-linux-gnu/
-cp /tmp/ssh_pylib/_ssl.cpython-37m-x86_64-linux-gnu.so /usr/local/lib/python3.7/lib-dynload/
-install_py37
-python3.7 -c "import _ssl"
+# # Get ssl libraries for py37
+# mkdir -p /usr/lib/x86_64-linux-gnu /usr/local/lib/python3.7/lib-dynload
+# cp /tmp/ssh_pylib/libcrypto.so.1.1 /usr/lib/x86_64-linux-gnu/
+# cp /tmp/ssh_pylib/libssl.so.1.1 /usr/lib/x86_64-linux-gnu/
+# cp /tmp/ssh_pylib/_ssl.cpython-37m-x86_64-linux-gnu.so /usr/local/lib/python3.7/lib-dynload/
+# install_py37
+# python3.7 -c "import _ssl"
 
-# Upgrade pip for python3
-curl "https://bootstrap.pypa.io/get-pip.py" -o "/tmp/get-pip.py"
-for version in '3.2' '3.3' '3.4' '3.5' '3.6' '3.7'
-do
-    echo "Installing pip for python$version"
-    # If there is a custom version then overwrite the generic one.
-    (curl -f "https://bootstrap.pypa.io/$version/get-pip.py" -o "/tmp/get-pip${version}.py" || true)
-    cp -n /tmp/get-pip.py /tmp/get-pip${version}.py
-    python"$version" /tmp/get-pip${version}.py
-done
+# # Upgrade pip for python3
+# curl "https://bootstrap.pypa.io/get-pip.py" -o "/tmp/get-pip.py"
+# for version in '3.2' '3.3' '3.4' '3.5' '3.6' '3.7'
+# do
+#     echo "Installing pip for python$version"
+#     # If there is a custom version then overwrite the generic one.
+#     (curl -f "https://bootstrap.pypa.io/$version/get-pip.py" -o "/tmp/get-pip${version}.py" || true)
+#     cp -n /tmp/get-pip.py /tmp/get-pip${version}.py
+#     python"$version" /tmp/get-pip${version}.py
+# done
 
-# Install virtualenv for each Python version
-# Support for Python 3.2 & 3.3 has been dropped, so they require specific versions
-echo "Installing pip for Python3.2"
-python3.2 -m pip install virtualenv==13.1.2
-echo "Installing pip for Python3.3"
-python3.3 -m pip install "virtualenv<16.0"
-for version in '2.7' '3.4' '3.5' '3.6' '3.7'
-do
-    echo "Installing pip for Python${version}"
-    python"$version" -m pip install virtualenv
-done
-cp /usr/local/bin/pip2 /usr/local/bin/pip
+# # Install virtualenv for each Python version
+# # Support for Python 3.2 & 3.3 has been dropped, so they require specific versions
+# echo "Installing pip for Python3.2"
+# python3.2 -m pip install virtualenv==13.1.2
+# echo "Installing pip for Python3.3"
+# python3.3 -m pip install "virtualenv<16.0"
+# for version in '2.7' '3.4' '3.5' '3.6' '3.7'
+# do
+#     echo "Installing pip for Python${version}"
+#     python"$version" -m pip install virtualenv
+# done
+# cp /usr/local/bin/pip2 /usr/local/bin/pip
 
-# Fix reinstalling npm packages
-# See https://github.com/npm/npm/issues/9863 for details
-sed -i 's/graceful-fs/fs-extra/g;s/fs.rename/fs.move/g' $(npm root -g)/npm/lib/utils/rename.js
+# # Fix reinstalling npm packages
+# # See https://github.com/npm/npm/issues/9863 for details
+# sed -i 's/graceful-fs/fs-extra/g;s/fs.rename/fs.move/g' $(npm root -g)/npm/lib/utils/rename.js
 
-# Install python dependencies
-#pip install ${PIP_OPTS} ${PIP_DEPENDS_EXTRA}
+# # Install python dependencies
+# #pip install ${PIP_OPTS} ${PIP_DEPENDS_EXTRA}
 
-echo "Installing all pip dependencies for python2.7"
-echo "" > ${DEPENDENCIES_FILE}
-collect_pip_dependencies "${ODOO_DEPENDENCIES_PY2}" "${PIP_DEPENDS_EXTRA}" "${DEPENDENCIES_FILE}"
-clean_requirements ${DEPENDENCIES_FILE}
-python2.7 -m pip install ${PIP_OPTS} -r ${DEPENDENCIES_FILE}
+# echo "Installing all pip dependencies for python2.7"
+# echo "" > ${DEPENDENCIES_FILE}
+# collect_pip_dependencies "${ODOO_DEPENDENCIES_PY2}" "${PIP_DEPENDS_EXTRA}" "${DEPENDENCIES_FILE}"
+# clean_requirements ${DEPENDENCIES_FILE}
+# python2.7 -m pip install ${PIP_OPTS} -r ${DEPENDENCIES_FILE}
 
-# TODO fix 3.2
-for version in '3.3' '3.4' '3.5' '3.6' '3.7'
-do
-    echo "" > ${DEPENDENCIES_FILE}
-    echo "Installing all pip dependencies for python${version}"
-    collect_pip_dependencies "${ODOO_DEPENDENCIES_PY3}" "${PIP_DEPENDS_EXTRA}" "${DEPENDENCIES_FILE}"
-    clean_requirements ${DEPENDENCIES_FILE}
-    python"$version" -m pip install ${PIP_OPTS} -r ${DEPENDENCIES_FILE}
-done
+# # TODO fix 3.2
+# for version in '3.3' '3.4' '3.5' '3.6' '3.7'
+# do
+#     echo "" > ${DEPENDENCIES_FILE}
+#     echo "Installing all pip dependencies for python${version}"
+#     collect_pip_dependencies "${ODOO_DEPENDENCIES_PY3}" "${PIP_DEPENDS_EXTRA}" "${DEPENDENCIES_FILE}"
+#     clean_requirements ${DEPENDENCIES_FILE}
+#     python"$version" -m pip install ${PIP_OPTS} -r ${DEPENDENCIES_FILE}
+# done
 
-# Installing black for compatible python versions
-python3.6 -m pip install black
-python3.7 -m pip install black
+# # Installing black for compatible python versions
+# python3.6 -m pip install black
+# python3.7 -m pip install black
 
-# Install xvfb daemon
-wget https://raw.githubusercontent.com/travis-ci/travis-cookbooks/trusty-stable/cookbooks/travis_build_environment/files/default/etc-init.d-xvfb.sh -O /etc/init.d/xvfb
-chmod +x /etc/init.d/xvfb
+# # Install xvfb daemon
+# wget https://raw.githubusercontent.com/travis-ci/travis-cookbooks/trusty-stable/cookbooks/travis_build_environment/files/default/etc-init.d-xvfb.sh -O /etc/init.d/xvfb
+# chmod +x /etc/init.d/xvfb
 
 # Init without download to add odoo remotes
 git init ${REPO_REQUIREMENTS}/odoo
@@ -183,46 +182,46 @@ git_clone_copy "${PYLINT_REPO}" "master" "conf/pylint_vauxoo_light_vim.cfg" "${R
 git_clone_copy "${PYLINT_REPO}" "master" "conf/.jslintrc" "${REPO_REQUIREMENTS}/linit_hook/travis/cfg/.jslintrc"
 ln -sf ${REPO_REQUIREMENTS}/linit_hook/git/* /usr/share/git-core/templates/hooks/
 
-# Create virtual environments for all installed Python versions
-for version in '2.7' '3.2' '3.3' '3.4' '3.5' '3.6' '3.7'
-do
-    echo "Creating a virtualenv using python${version}"
-    python${version} -m virtualenv --system-site-packages ${REPO_REQUIREMENTS}/virtualenv/python${version}
-    case ${version} in 3.2|3.3)
-        # linit pip requirements may not be installed on these versions
-        continue;;
-    esac
-    # Install coverage in the virtual environment
-    # Please don't remove it because emit errors from other environments
-    source ${REPO_REQUIREMENTS}/virtualenv/python${version}/bin/activate
-    pip install --force-reinstall --upgrade coverage --src .
+# # Create virtual environments for all installed Python versions
+# for version in '2.7' '3.2' '3.3' '3.4' '3.5' '3.6' '3.7'
+# do
+#     echo "Creating a virtualenv using python${version}"
+#     python${version} -m virtualenv --system-site-packages ${REPO_REQUIREMENTS}/virtualenv/python${version}
+#     case ${version} in 3.2|3.3)
+#         # linit pip requirements may not be installed on these versions
+#         continue;;
+#     esac
+#     # Install coverage in the virtual environment
+#     # Please don't remove it because emit errors from other environments
+#     source ${REPO_REQUIREMENTS}/virtualenv/python${version}/bin/activate
+#     pip install --force-reinstall --upgrade coverage --src .
 
-    # Execute travis_install_nightly
-    echo "Installing the linit pip requirements using python${version}"
-    LINT_CHECK=1 TESTS=0 ${REPO_REQUIREMENTS}/linit_hook/travis/travis_install_nightly
-    pip install --no-binary pycparser -r ${REPO_REQUIREMENTS}/linit_hook/requirements.txt
+#     # Execute travis_install_nightly
+#     echo "Installing the linit pip requirements using python${version}"
+#     LINT_CHECK=1 TESTS=0 ${REPO_REQUIREMENTS}/linit_hook/travis/travis_install_nightly
+#     pip install --no-binary pycparser -r ${REPO_REQUIREMENTS}/linit_hook/requirements.txt
 
-    deactivate
-done
+#     deactivate
+# done
 
 # Add python3.7-dev for compatibility with travis.yml
-ln -s ${REPO_REQUIREMENTS}/virtualenv/python3.7 ${REPO_REQUIREMENTS}/virtualenv/python3.7-dev
+# ln -s ${REPO_REQUIREMENTS}/virtualenv/python3.7 ${REPO_REQUIREMENTS}/virtualenv/python3.7-dev
 
-export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python2.7
-echo "VIRTUALENVWRAPPER_PYTHON=/usr/bin/python2.7" >> /etc/bash.bashrc
+# export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python2.7
+# echo "VIRTUALENVWRAPPER_PYTHON=/usr/bin/python2.7" >> /etc/bash.bashrc
 
 # Change default python and pip 3 version from 3.4 to 3.5 and
-rm /usr/bin/python3
-ln -s /usr/bin/python3.5 /usr/bin/python3
-rm /usr/local/bin/pip3
-ln -s /usr/local/bin/pip3.5 /usr/local/bin/pip3
-cp /usr/lib/python3/dist-packages/apt_pkg.cpython-34m-x86_64-linux-gnu.so /usr/lib/python3/dist-packages/apt_pkg.cpython-35m-x86_64-linux-gnu.so
+# rm /usr/bin/python3
+# ln -s /usr/bin/python3.5 /usr/bin/python3
+# rm /usr/local/bin/pip3
+# ln -s /usr/local/bin/pip3.5 /usr/local/bin/pip3
+# cp /usr/lib/python3/dist-packages/apt_pkg.cpython-34m-x86_64-linux-gnu.so /usr/lib/python3/dist-packages/apt_pkg.cpython-35m-x86_64-linux-gnu.so
 
-# Creating virtual environments node js
-nodeenv ${REPO_REQUIREMENTS}/virtualenv/nodejs
-# Install node dependencies
-(source ${REPO_REQUIREMENTS}/virtualenv/nodejs/bin/activate && npm install ${NPM_OPTS} ${NPM_DEPENDS})
-echo "REPO_REQUIREMENTS=${REPO_REQUIREMENTS}" >> /etc/bash.bashrc
+# # Creating virtual environments node js
+# nodeenv ${REPO_REQUIREMENTS}/virtualenv/nodejs
+# # Install node dependencies
+# (source ${REPO_REQUIREMENTS}/virtualenv/nodejs/bin/activate && npm install ${NPM_OPTS} ${NPM_DEPENDS})
+# echo "REPO_REQUIREMENTS=${REPO_REQUIREMENTS}" >> /etc/bash.bashrc
 
 # Keep alive the ssh server
 #   60 seconds * 360 = 21600 seconds = 6 hours
@@ -571,8 +570,8 @@ source "/usr/local/rvm/scripts/rvm"
 
 EOF
 
-install_pyflame
-install_tmux
+# install_pyflame
+# install_tmux
 cat >> /etc/tmux.conf << EOF
 # tmux - Set lower history limit to save RAM memory
 set -g history-limit 500
