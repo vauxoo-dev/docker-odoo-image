@@ -47,6 +47,8 @@ DPKG_DEPENDS="postgresql-9.3 postgresql-contrib-9.3 \
               postgresql-9.6 postgresql-contrib-9.6 \
               postgresql-10 postgresql-contrib-10 \
               postgresql-11 postgresql-contrib-11 \
+              postgresql-12 postgresql-contrib-12 \
+              postgresql-13 postgresql-contrib-13 \
               pgbadger perl-modules make openssl p7zip-full expect-dev mosh bpython \
               libarchive-tools rsync graphviz openssh-server cmake zsh tree tig libffi-dev \
               lua50 liblua50-dev liblualib50-dev exuberant-ctags rake \
@@ -182,7 +184,7 @@ git_clone_copy "${PYLINT_REPO}" "master" "conf/pylint_vauxoo_light_vim.cfg" "${R
 git_clone_copy "${PYLINT_REPO}" "master" "conf/.jslintrc" "${REPO_REQUIREMENTS}/linit_hook/travis/cfg/.jslintrc"
 ln -sf ${REPO_REQUIREMENTS}/linit_hook/git/* /usr/share/git-core/templates/hooks/
 
-# # Create virtual environments for all installed Python versions
+# Create virtual environments for all installed Python versions
 # for version in '2.7' '3.2' '3.3' '3.4' '3.5' '3.6' '3.7'
 # do
 #     echo "Creating a virtualenv using python${version}"
@@ -464,19 +466,19 @@ sed -i 's/^plugins=(/plugins=(\n  virtualenv/' /home/odoo/.zshrc
 # Set default shell to the root user
 usermod -s /bin/bash root
 
-# Export another PYTHONPATH and activate the virtualenvironment
-for BASHRC in ${HOME}/.bashrc /home/odoo/.bashrc ${HOME}/.zshrc /home/odoo/.zshrc
-do
-    echo "Export the PYTHONPATH IN ${BASHRC}"
-    cat >> $BASHRC << EOF
-if [[ "x\${TRAVIS_PYTHON_VERSION}" == "x" ]] ; then
-    TRAVIS_PYTHON_VERSION="2.7"
-fi
-source ${REPO_REQUIREMENTS}/virtualenv/python\${TRAVIS_PYTHON_VERSION}/bin/activate
-source ${REPO_REQUIREMENTS}/virtualenv/nodejs/bin/activate
-PYTHONPATH=${PYTHONPATH}:${REPO_REQUIREMENTS}/odoo
-EOF
-done
+# # Export another PYTHONPATH and activate the virtualenvironment
+# for BASHRC in ${HOME}/.bashrc /home/odoo/.bashrc ${HOME}/.zshrc /home/odoo/.zshrc
+# do
+#     echo "Export the PYTHONPATH IN ${BASHRC}"
+#     cat >> $BASHRC << EOF
+# if [[ "x\${TRAVIS_PYTHON_VERSION}" == "x" ]] ; then
+#     TRAVIS_PYTHON_VERSION="2.7"
+# fi
+# source ${REPO_REQUIREMENTS}/virtualenv/python\${TRAVIS_PYTHON_VERSION}/bin/activate
+# source ${REPO_REQUIREMENTS}/virtualenv/nodejs/bin/activate
+# PYTHONPATH=${PYTHONPATH}:${REPO_REQUIREMENTS}/odoo
+# EOF
+# done
 
 # Move inclusion of .bash_aliases to the end of .bashrc so it takes presedence
 sed -i '/^if \[ -f ~\/.bash_aliases \]; then/,+2d' /home/odoo/.bashrc
@@ -533,6 +535,16 @@ psql_create_role "root" "aeK5NWNr2"
 /etc/init.d/postgresql stop
 
 PSQL_VERSION="11" /entrypoint_image
+psql_create_role "shippable" "aeK5NWNr2"
+psql_create_role "root" "aeK5NWNr2"
+/etc/init.d/postgresql stop
+
+PSQL_VERSION="12" /entrypoint_image
+psql_create_role "shippable" "aeK5NWNr2"
+psql_create_role "root" "aeK5NWNr2"
+/etc/init.d/postgresql stop
+
+PSQL_VERSION="13" /entrypoint_image
 psql_create_role "shippable" "aeK5NWNr2"
 psql_create_role "root" "aeK5NWNr2"
 /etc/init.d/postgresql stop
